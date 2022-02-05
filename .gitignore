@@ -1,0 +1,12 @@
+# OS stuff
+.DS_Store
+
+# Editor stuff
+.idea
+*.sublime*
+tags
+*.un~
+
+# Rust stuff
+Cargo.lock
+target

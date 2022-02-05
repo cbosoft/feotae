@@ -1,0 +1,31 @@
+name = "The green candle"
+description = "A demo text adventure game."
+current_stage = "first"
+player_inventory = []
+
+[inventory]
+[inventory.1]
+name = "blue key"
+description = "a blue key"
+
+[inventory.2]
+name = "red key"
+description = "a red key"
+
+[stages]
+
+[stages.first]
+description = "You stand in a forest. Dense forest blocks your way except for a path leading north."
+
+[stages.first.paths]
+[stages.first.paths.north]
+description = "A break in the forest to the North, you could probably make your way through here."
+destination = "second"
+
+[stages.second]
+description = "stage 2"
+
+[stages.second.paths]
+[stages.second.paths.south]
+description = "a path leads south."
+destination = "first"
