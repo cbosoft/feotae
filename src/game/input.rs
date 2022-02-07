@@ -1,36 +1,75 @@
 use std::io::{self, Write};
 
-#[derive(PartialEq, Debug)]
+use pcre::{Pcre, Match};
+
+#[derive(PartialEq, Debug, Clone)]
 pub enum Input {
     Go(String),
     Look(String),
-    // Take(String),
+    Take(String),
     Search,
     NoOp
 }
 
-fn unrecognised(input: &String) -> Input {
-    println!("Unrecognised input: {}", input);
-    Input::NoOp
+pub enum InputSpec {
+    Go, Look, Take, Search
 }
 
-fn parse_input_str(input: &str) -> Input {
-    let tokens = input.split(' ').collect::<Vec<_>>();
-    let n = tokens.len();
-    match n {
-        0 => Input::NoOp,
-        1 => match tokens[0] {
-            "search" => Input::Search,
-            _ => unrecognised(&input.to_string())
-        },
-        2 => match tokens[0] {
-            "go" => Input::Go(tokens[1].to_string()),
-            "look" => Input::Look(tokens[1].to_string()),
-            "examine" => Input::Look(tokens[1].to_string()),
-            _ => unrecognised(&input.to_string())
+struct InputPattern {
+    pattern: &'static str,
+    input: InputSpec
+}
+
+impl InputPattern {
+    pub const fn new(pattern: &'static str, input: InputSpec) -> InputPattern {
+        InputPattern{
+            pattern,
+            input
         }
-        _ => Input::NoOp,
     }
+
+    pub fn get_input(&self, input: &String) -> Result<Input, String> {
+        let mut regex = Pcre::compile(self.pattern).unwrap();
+        let matches = regex.matches(input).collect::<Vec<Match>>();
+        if matches.len() == 1 {
+            let m = matches.first().unwrap();
+
+            Ok(match self.input {
+                InputSpec::Go => Input::Go(m.group(1).to_string()),
+                InputSpec::Look => Input::Look(m.group(1).to_string()),
+                InputSpec::Take => Input::Take(m.group(1).to_string()),
+                InputSpec::Search => Input::Search
+            })
+        }
+        else if matches.len() > 1 {
+            Err("too many matches".to_string())
+        }
+        else {
+            Err("no match".to_string())
+        }
+    }
+}
+
+static INPUT_PATTERNS: [InputPattern; 4] =
+[
+    InputPattern::new(r"go (\w+)",InputSpec::Go),
+    InputPattern::new(r"(?:look(?: at)?|examine) (\w+)",InputSpec::Look),
+    InputPattern::new(r"search", InputSpec::Search),
+    InputPattern::new(r"take (\w+)", InputSpec::Take),
+    //InputPattern::new("use (\w+) (?:(?:with|on) (\w+))?", 2),
+    //InputPattern::new("attack (\w+) (?:with (\w+))?", 2)
+];
+
+fn parse_input_str(input: &str) -> Input {
+    let sinput = input.to_string();
+    for input_pattern in &INPUT_PATTERNS {
+        if let Ok(result) = input_pattern.get_input(&sinput) {
+            return result;
+        }
+    }
+
+    println!("Unrecognised input: \"{}\"", input);
+    Input::NoOp
 }
 
 pub fn get_input() -> Input {
@@ -46,6 +85,7 @@ pub fn get_input() -> Input {
     }
 }
 
+#[cfg(test)]
 mod tests {
 
     use crate::game::input::{Input, parse_input_str};
@@ -57,5 +97,7 @@ mod tests {
         assert_eq!(parse_input_str("look north"), Input::Look("north".to_string()));
         assert_eq!(parse_input_str("examine spade"), Input::Look("spade".to_string()));
         assert_eq!(parse_input_str("search"), Input::Search);
+        assert_eq!(parse_input_str("take"), Input::NoOp);
+        assert_eq!(parse_input_str("take all"), Input::Take("all".to_string()));
     }
 }
