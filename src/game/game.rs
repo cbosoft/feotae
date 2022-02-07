@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::ops::{Index, IndexMut};
 
 use serde::Deserialize;
 
@@ -18,6 +19,26 @@ pub struct Game {
     player_inventory: Vec<String>,
     stages: HashMap<String, Stage>,
     current_stage: String
+}
+
+impl Index<&String> for Game {
+    type Output = Stage;
+
+    fn index(&self, index: &String) -> &Self::Output {
+        match self.stages.get(index) {
+            Some(stage) => stage,
+            None => panic!("attempted to access an undefined stage")
+        }
+    }
+}
+
+impl IndexMut<&String> for Game {
+    fn index_mut(&mut self, index: &String) -> &mut Self::Output {
+        match self.stages.get_mut(index) {
+            Some(stage) => stage,
+            None => panic!("attempted to access an undefined stage")
+        }
+    }
 }
 
 enum TraversalErrorKind {
