@@ -178,6 +178,8 @@ impl Game {
 
 } // impl Game
 
+
+#[cfg(test)]
 mod tests {
 
     use crate::game::game::Game;
