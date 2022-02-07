@@ -4,11 +4,11 @@ current_stage = "first"
 player_inventory = []
 
 [inventory]
-[inventory.1]
+[inventory.blue_key]
 name = "blue key"
 description = "a blue key"
 
-[inventory.2]
+[inventory.red_key]
 name = "red key"
 description = "a red key"
 
@@ -16,6 +16,7 @@ description = "a red key"
 
 [stages.first]
 description = "You stand in a forest. Dense forest blocks your way except for a path leading north."
+items = ["blue_key"]
 
 [stages.first.paths]
 [stages.first.paths.north]
