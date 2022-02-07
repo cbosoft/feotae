@@ -56,7 +56,12 @@ impl Game {
     }
 
     fn current_stage(&self) -> &Stage {
-        &self.stages[&self.current_stage]
+        &self[&self.current_stage]
+    }
+
+    fn current_stage_mut(&mut self) -> &mut Stage {
+        let stage = self.current_stage.clone();
+        &mut self[&stage]
     }
 
     pub fn play(&mut self) {
@@ -94,10 +99,13 @@ impl Game {
     fn look(&self, thing_name: String) {
         let stage = self.current_stage();
         if let Some(path) = stage.get_path(&thing_name) {
-            println!("{}", path.description);
+            println!("\n{}", path.description);
+        }
+        else if let Some(item) = self.inventory.get(&thing_name) {
+            println!("\n{}", item.description);
         }
         else {
-            println!("You look around, but see no \"{}\".", thing_name);
+            println!("\nYou look around, but see no \"{}\".", thing_name);
         }
     }
 
@@ -106,11 +114,33 @@ impl Game {
         stage.search();
     }
 
+    fn take(&mut self, thing_name: String) {
+        let stage = self.current_stage_mut();
+        if thing_name == "all".to_string() {
+            if let Some(items) = stage.take_all() {
+                self.player_inventory.extend(items);
+            }
+            else {
+                println!("You look around, but there's nothing to take.");
+            }
+        } else {
+            if let Some(thing) = stage.take(thing_name) {
+                self.player_inventory.push(thing);
+            }
+            else {
+                println!("You look around, but there's nothing to take.");
+            }
+        }
+    }
+
+
+
     fn process_input(&mut self) {
         match get_input() {
             Input::Go(p) => self.go_dir(p),
             Input::Look(p) => self.look(p),
             Input::Search => self.search(),
+            Input::Take(p) => self.take(p),
             Input::NoOp => ()
         }
     }
