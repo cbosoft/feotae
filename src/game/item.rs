@@ -1,4 +1,5 @@
 use serde::Deserialize;
+use pcre::Pcre;
 
 #[derive(Deserialize)]
 pub struct Item {
@@ -10,15 +11,13 @@ pub struct Item {
 fn get_article(word: &String) -> String {
     let a = "a".to_string();
     let an = "an".to_string();
-    match &word[0..1] {
-        "a" => an,
-        "e" => an,
-        "i" => an,
-        "o" => an,
-        "u" => an,
-        _ => a
+    let mut an_re = Pcre::compile(r"^([aeiou]|ho).*").unwrap();
+    if an_re.matches(word).count() > 0 {
+        an
     }
-
+    else {
+        a
+    }
 }
 
 impl Item {
@@ -55,5 +54,6 @@ mod tests {
         assert_eq!(get_article(&"foo".to_string()), a);
         assert_eq!(get_article(&"abacus".to_string()), an);
         assert_eq!(get_article(&"yellow".to_string()), a);
+        assert_eq!(get_article(&"hour".to_string()), an);
     }
 }
