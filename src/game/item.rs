@@ -8,7 +8,7 @@ pub struct Item {
     pub hidden: Option<bool>
 }
 
-fn get_article(word: &String) -> String {
+pub fn get_article(word: &String) -> String {
     let a = "a".to_string();
     let an = "an".to_string();
     let mut an_re = Pcre::compile(r"^([aeiou]|ho).*").unwrap();

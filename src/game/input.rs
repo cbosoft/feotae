@@ -7,12 +7,14 @@ pub enum Input {
     Go(String),
     Look(String),
     Take(String),
+    Use(String),
+    UseWith(String, String),
     Search,
     NoOp
 }
 
 pub enum InputSpec {
-    Go, Look, Take, Search
+    Go, Look, Take, Use, Search
 }
 
 struct InputPattern {
@@ -38,6 +40,10 @@ impl InputPattern {
                 InputSpec::Go => Input::Go(m.group(1).to_string()),
                 InputSpec::Look => Input::Look(m.group(1).to_string()),
                 InputSpec::Take => Input::Take(m.group(1).to_string()),
+                InputSpec::Use => match regex.capture_count() {
+                    1 => Input::Use(m.group(1).to_string()),
+                    _ => Input::UseWith(m.group(1).to_string(), m.group(2).to_string())
+                }
                 InputSpec::Search => Input::Search
             })
         }
@@ -50,13 +56,13 @@ impl InputPattern {
     }
 }
 
-static INPUT_PATTERNS: [InputPattern; 4] =
+static INPUT_PATTERNS: [InputPattern; 5] =
 [
     InputPattern::new(r"go (\w+)",InputSpec::Go),
     InputPattern::new(r"(?:look(?: at)?|examine) (\w+)",InputSpec::Look),
     InputPattern::new(r"search", InputSpec::Search),
     InputPattern::new(r"take (\w+)", InputSpec::Take),
-    //InputPattern::new("use (\w+) (?:(?:with|on) (\w+))?", 2),
+    InputPattern::new(r"use (\w+) (?:(?:with|on) (\w+))?", InputSpec::Use),
     //InputPattern::new("attack (\w+) (?:with (\w+))?", 2)
 ];
 

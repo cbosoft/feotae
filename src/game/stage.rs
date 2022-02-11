@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use serde::Deserialize;
+use crate::game::Game;
 
 use super::path::Path;
 use super::item::Item;
@@ -9,7 +10,10 @@ use super::item::Item;
 pub struct Stage {
     description: String,
     paths: HashMap<String, Path>,
-    items: Option<Vec<String>>
+    #[serde(skip_serializing_if = "Vec::is_empty", default)]
+    items: Vec<String>,
+    #[serde(skip_serializing_if = "HashMap::is_empty", default)]
+    pub triggers: HashMap<String, String>
 }
 
 impl Stage {
@@ -19,21 +23,16 @@ impl Stage {
     }
 
     pub fn search(&self) {
-        if let Some(ref items) = self.items {
-            match Item::items_to_text(items) {
-                Some(txt) => println!("\nYou found {}", txt),
-                None => println!("\nYou search the area, but find nothing.")
-            }
-        }
-        else {
-            println!("\nYou search the area, but find nothing.");
+        match Item::items_to_text(&self.items) {
+            Some(txt) => println!("\nYou found {}", txt),
+            None => println!("\nYou search the area, but find nothing.")
         }
     }
 
     pub fn take_all(&mut self) -> Option<Vec<String>> {
-        if let Some(items) = &mut self.items {
-            let items_cpy = items.clone();
-            items.clear();
+        if self.items.len() > 0 {
+            let items_cpy = self.items.clone();
+            self.items.clear();
             Some(items_cpy)
         }
         else {
@@ -42,14 +41,9 @@ impl Stage {
     }
 
     pub fn take(&mut self, item_name: String) -> Option<String> {
-        if let Some(items) = &mut self.items {
-            if items.contains(&item_name) {
-                items.retain(|x| x != &item_name);
-                Some(item_name)
-            }
-            else {
-                None
-            }
+        if self.items.contains(&item_name) {
+            self.items.retain(|x| x != &item_name);
+            Some(item_name)
         }
         else {
             None
@@ -58,5 +52,5 @@ impl Stage {
 
     pub fn get_path(&self, path_ident: &String) -> Option<&Path> {
         self.paths.get(path_ident)
-    } 
+    }
 } // impl stage

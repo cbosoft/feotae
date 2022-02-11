@@ -1,23 +1,33 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::ops::{Index, IndexMut};
 
 use serde::Deserialize;
 
-use super::input::{Input, get_input};
-use super::stage::Stage;
-use super::parse::get_contents;
-use super::item::Item;
-use super::path::Path;
-
+use super::{
+    input::{
+        Input,
+        get_input
+    },
+    stage::Stage,
+    parse::get_contents,
+    item::{Item, get_article},
+    path::Path,
+    trigger::Trigger
+};
 
 
 #[derive(Deserialize)]
 pub struct Game {
     name: String,
     description: String,
+    #[serde(skip_serializing_if = "HashMap::is_empty", default)]
     inventory: HashMap<String, Item>,
+    #[serde(skip_serializing_if = "Vec::is_empty", default)]
     player_inventory: Vec<String>,
+    #[serde(skip_serializing_if = "HashMap::is_empty", default)]
     stages: HashMap<String, Stage>,
+    #[serde(skip_serializing_if = "HashSet::is_empty", default)]
+    flags: HashSet<String>,
     current_stage: String
 }
 
@@ -133,7 +143,29 @@ impl Game {
         }
     }
 
+    fn use_object(&mut self, object: String) {
+        println!("use object \"{}\"", object);
+        self.run_trigger("use ".to_string() + &object);
+    }
 
+    fn use_item_with_object(&mut self, item: String, object: String) {
+        println!("use item \"{}\" with object \"{}\"", item, object);
+        if self.player_inventory.contains(&item) {
+            self.run_trigger("use ".to_string() + &item + " on " + &object);
+        }
+        else {
+            println!("\nYou pat your pockets, but realise you don't have {} {} to use.",  get_article(&item), &item)
+        }
+    }
+
+    fn run_trigger(&mut self, trigger: String) {
+        if let Some(flag) = self.current_stage().triggers.get(&trigger) {
+            self.flags.insert((*flag).clone());
+        }
+        else {
+            println!("\nOh no, you can't do that.")
+        }
+    }
 
     fn process_input(&mut self) {
         match get_input() {
@@ -141,13 +173,15 @@ impl Game {
             Input::Look(p) => self.look(p),
             Input::Search => self.search(),
             Input::Take(p) => self.take(p),
+            Input::Use(object) => self.use_object(object),
+            Input::UseWith(item, object) => self.use_item_with_object(item, object),
             Input::NoOp => ()
         }
     }
 
     fn is_path_hidden(&self, path: &Path) -> bool {
-        if let Some(ref cloaking_item_name) = path.hidden_by {
-            if !self.player_inventory.contains(&cloaking_item_name) {
+        if let Some(ref flag) = path.hidden_unless {
+            if !self.flags.contains(flag) {
                 return true;
             }
         }
@@ -188,8 +222,6 @@ mod tests {
 name: "the great test"
 description: "test game for testing"
 current_stage: "first"
-player_inventory:
-  -
 inventory:
   blue key:
     name: blue key
@@ -204,7 +236,10 @@ stages:
       east:
         description: "a path to the east"
         destination: "first"
-        hidden_by: "_first_east_hide"
+        hidden_unless: "stage:first lever pulled"
+    triggers:
+      action: "foo"
+
 "#;
 
     #[test]

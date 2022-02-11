@@ -6,6 +6,6 @@ pub struct Path {
     pub destination: String, // name of stage
     pub locked_by: Option<String>, // item that is required to unlock the path
     pub locked_text: Option<String>,
-    pub hidden_by: Option<String>,  // item required to show the path
+    pub hidden_unless: Option<String>,  // hidden from player unless flag is set
     pub hidden_text: Option<String>
 }
