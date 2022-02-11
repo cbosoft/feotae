@@ -47,11 +47,11 @@ enum TraversalErrorKind {
 }
 
 impl Game {
-    pub fn from_toml(filename: &str) -> Result<Game, String> {
+    pub fn from_file(filename: &str) -> Result<Game, String> {
         let contents_str = get_contents(filename)?;
-        match toml::from_str(&contents_str) {
+        match serde_yaml::from_str(&contents_str) {
             Ok(game) => Ok(game),
-            Err(info) => Err(format!("could not parse toml: {:?}", info))
+            Err(info) => Err(format!("could not parse file: {:?}", info))
         }
     }
 
@@ -185,44 +185,31 @@ mod tests {
     use crate::game::game::Game;
 
     const WORKING_GAME_SOURCE: &str = r#"
-name = "the great test"
-description = "test game for testing"
-current_stage = "first"
-player_inventory = []
-
-[inventory]
-[inventory.1]
-name = "blue key"
-description = "a blue key"
-
-[inventory.2]
-name = "red key"
-description = "a red key"
-
-[inventory._first_east_hide]
-name = "na"
-description = "na"
-hidden = true
-
-[stages]
-[stages.first]
-description = "A test stage"
-
-[stages.first.paths]
-[stages.first.paths.north]
-description = "a path to the north"
-destination = "first"
-
-[stages.first.paths.east]
-description = "a path to the east"
-destination = "first"
-hidden_by = "_first_east_hide"
+name: "the great test"
+description: "test game for testing"
+current_stage: "first"
+player_inventory:
+  -
+inventory:
+  blue key:
+    name: blue key
+    description: a blue key
+stages:
+  first:
+    description: "A test stage"
+    paths:
+      north:
+        description: "north path"
+        destination: "first"
+      east:
+        description: "a path to the east"
+        destination: "first"
+        hidden_by: "_first_east_hide"
 "#;
 
     #[test]
     fn parse_test() {
-        println!(">>{}<<", WORKING_GAME_SOURCE);
-        match toml::from_str::<Game>(WORKING_GAME_SOURCE) {
+        match serde_yaml::from_str::<Game>(WORKING_GAME_SOURCE) {
             Ok(_) => (),
             Err(s) => { println!("{}", s); panic!() }
         }

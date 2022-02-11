@@ -1,0 +1,27 @@
+name: "The green candle"
+description: "A demo text adventure game."
+current_stage: "first"
+player_inventory:
+  -
+inventory:
+  blue key:
+    name: blue key
+    description: a blue key
+  red key:
+    name: red key
+    description: a red key
+stages:
+  first:
+    description: "You stand in a forest. Dense forest blocks your way except for a path leading north."
+    items:
+      - blue key
+    paths:
+      north:
+        description: "A break in the forest to the North, you could probably make your way through here."
+        destination: "second"
+  second:
+    description: stage 2
+    paths:
+      south:
+        description: "A path leads South."
+        destination: "first"
