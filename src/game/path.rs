@@ -1,6 +1,6 @@
-use serde::Deserialize;
+use serde::{Serialize, Deserialize};
 
-#[derive(Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Path {
     pub description: String, // descriptive text shown to the player
     #[serde(skip_serializing_if = "String::is_empty", default)]

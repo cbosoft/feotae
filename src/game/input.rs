@@ -10,11 +10,15 @@ pub enum Input {
     Use(String),
     UseWith(String, String),
     Search,
-    NoOp
+    NoOp,
+
+    Save(Option<String>),
+    Load(Option<String>),
+    Exit
 }
 
 pub enum InputSpec {
-    Go, Look, Take, Use, Search
+    Go, Look, Take, Use, Search, Save, Load, Exit
 }
 
 struct InputPattern {
@@ -40,11 +44,29 @@ impl InputPattern {
                 InputSpec::Go => Input::Go(m.group(1).to_string()),
                 InputSpec::Look => Input::Look(m.group(1).to_string()),
                 InputSpec::Take => Input::Take(m.group(1).to_string()),
-                InputSpec::Use => match regex.capture_count() {
-                    1 => Input::Use(m.group(1).to_string()),
-                    _ => Input::UseWith(m.group(1).to_string(), m.group(2).to_string())
-                }
-                InputSpec::Search => Input::Search
+                InputSpec::Use => if regex.capture_count() == 1 {
+                    Input::Use(m.group(1).to_string())
+                } else {
+                    Input::UseWith(m.group(1).to_string(), m.group(2).to_string())
+                },
+                InputSpec::Search => Input::Search,
+                InputSpec::Save => Input::Save(
+                    if regex.capture_count() == 0 {
+                        None
+                    }
+                    else {
+                        Some(m.group(1).to_string())
+                    }
+                ),
+                InputSpec::Load => Input::Load(
+                    if regex.capture_count() == 0 {
+                        None
+                    }
+                    else {
+                        Some(m.group(1).to_string())
+                    }
+                ),
+                InputSpec::Exit => Input::Exit
             })
         }
         else if matches.len() > 1 {
@@ -56,14 +78,21 @@ impl InputPattern {
     }
 }
 
-static INPUT_PATTERNS: [InputPattern; 5] =
+static INPUT_PATTERNS: [InputPattern; 10] =
 [
-    InputPattern::new(r"go (\w+)",InputSpec::Go),
+    InputPattern::new(r"(?:go|enter) (\w+)",InputSpec::Go),
     InputPattern::new(r"(?:look(?: at)?|examine) (\w+)",InputSpec::Look),
     InputPattern::new(r"search", InputSpec::Search),
-    InputPattern::new(r"take (\w+)", InputSpec::Take),
+    InputPattern::new(r"take (.*)", InputSpec::Take),
     InputPattern::new(r"use (\w+)", InputSpec::Use),
     //InputPattern::new("attack (\w+) (?:with (\w+))?", 2)
+
+    // "menu" commands
+    InputPattern::new(r"exit", InputSpec::Exit),
+    InputPattern::new(r"save", InputSpec::Save),
+    InputPattern::new(r"save (\w+)", InputSpec::Save),
+    InputPattern::new(r"load", InputSpec::Load),
+    InputPattern::new(r"load (\w+)?", InputSpec::Load),
 ];
 
 fn parse_input_str(input: &str) -> Input {
