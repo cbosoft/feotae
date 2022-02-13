@@ -8,19 +8,15 @@ use super::item::Item;
 
 #[derive(Deserialize)]
 pub struct Stage {
-    description: String,
-    paths: HashMap<String, Path>,
+    pub description: String,
+    pub paths: HashMap<String, Path>,
     #[serde(skip_serializing_if = "Vec::is_empty", default)]
-    items: Vec<String>,
+    pub items: Vec<String>,
     #[serde(skip_serializing_if = "HashMap::is_empty", default)]
-    pub triggers: HashMap<String, String>
+    pub triggers: HashMap<String, Trigger>
 }
 
 impl Stage {
-
-    pub fn display(&self) {
-        println!("\n{}", self.description);
-    }
 
     pub fn search(&self) {
         match Item::items_to_text(&self.items) {

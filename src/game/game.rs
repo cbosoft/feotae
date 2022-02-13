@@ -80,7 +80,7 @@ impl Game {
         println!("{}", self.description);
         println!("---");
         loop {
-            self.current_stage().display();
+            self.display(self.current_stage());
             self.process_input();
         }
     }
@@ -109,7 +109,7 @@ impl Game {
     fn look(&self, thing_name: String) {
         let stage = self.current_stage();
         if let Some(path) = stage.get_path(&thing_name) {
-            println!("\n{}", path.description);
+            println!("\n{}", path.detailed_description);
         }
         else if let Some(item) = self.inventory.get(&thing_name) {
             println!("\n{}", item.description);
@@ -207,6 +207,22 @@ impl Game {
         else {
             Ok(path.destination.clone())
         }
+    }
+
+    pub fn display(&self, stage: &Stage) {
+        print!("\n{}", stage.description);
+        for (_pathname,  path) in &stage.paths {
+            if !self.is_path_hidden(path) {
+                print!(" {}", path.description);
+            }
+        }
+        for (_trigger_name,  trigger) in &stage.triggers {
+            if trigger.visible {
+                print!(" {}", trigger.description);
+            }
+        }
+        println!();
+
     }
 
 
