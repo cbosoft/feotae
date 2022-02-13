@@ -158,13 +158,40 @@ impl Game {
         }
     }
 
-    fn run_trigger(&mut self, trigger: String) {
-        if let Some(flag) = self.current_stage().triggers.get(&trigger) {
-            self.flags.insert((*flag).clone());
+    fn run_trigger(&mut self, trigger_name: String) {
+        let stage = self.stages[&(self.current_stage)].clone();
+        if let Some(trigger) = stage.triggers.get(&trigger_name) {
+            if trigger.action == "toggle" {
+                self.toggle_flag(&trigger.flag);
+            }
+            else {
+                self.set_flag(&trigger.flag);
+            }
         }
         else {
             println!("\nOh no, you can't do that.")
         }
+    }
+
+    fn toggle_flag(&mut self, flag_name: &String) {
+        if self.is_flag_set(flag_name) {
+            self.unset_flag(flag_name);
+        }
+        else {
+            self.set_flag(flag_name);
+        }
+    }
+
+    fn is_flag_set(&self, flag_name: &String) -> bool {
+        self.flags.contains(flag_name)
+    }
+
+    fn set_flag(&mut self, flag_name: &String) {
+        self.flags.insert((*flag_name).clone());
+    }
+
+    fn unset_flag(&mut self, flag_name: &String) {
+        self.flags.remove(flag_name);
     }
 
     fn process_input(&mut self) {
@@ -254,7 +281,10 @@ stages:
         destination: "first"
         hidden_unless: "stage:first lever pulled"
     triggers:
-      action: "foo"
+      action:
+        description: foo
+        flag: "foo"
+        visible: false
 
 "#;
 

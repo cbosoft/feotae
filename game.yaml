@@ -12,13 +12,23 @@ inventory:
     description: a red key
 stages:
   first:
-    description: "You stand in a forest. Dense forest blocks your way except for a path leading north."
+    description: "You stand in a forest."
     items:
       - blue key
     paths:
       north:
-        description: "A break in the forest to the North, you could probably make your way through here."
+        description: "There is a break in the forest to the North, you could probably make your way through there."
         destination: "second"
+      hole:
+        description: "A hole has opened in a tree nearby."
+        detailed_description: "Pressing the button unveiled a hole in a tree. The hole seems large enough for you go through."
+        destination: "second"
+        hidden_unless: "stage:first tree hole button"
+    triggers:
+      use button:
+        description: "There appears to be a button on the trunk of a nearby tree."
+        action: "set"
+        flag: "stage:first tree hole button"
   second:
     description: stage 2
     paths:

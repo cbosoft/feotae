@@ -5,8 +5,9 @@ use crate::game::Game;
 
 use super::path::Path;
 use super::item::Item;
+use super::trigger::Trigger;
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 pub struct Stage {
     pub description: String,
     pub paths: HashMap<String, Path>,

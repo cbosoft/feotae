@@ -62,19 +62,21 @@ static INPUT_PATTERNS: [InputPattern; 5] =
     InputPattern::new(r"(?:look(?: at)?|examine) (\w+)",InputSpec::Look),
     InputPattern::new(r"search", InputSpec::Search),
     InputPattern::new(r"take (\w+)", InputSpec::Take),
-    InputPattern::new(r"use (\w+) (?:(?:with|on) (\w+))?", InputSpec::Use),
+    InputPattern::new(r"use (\w+)", InputSpec::Use),
     //InputPattern::new("attack (\w+) (?:with (\w+))?", 2)
 ];
 
 fn parse_input_str(input: &str) -> Input {
     let sinput = input.to_string();
+    let mut err_reason = String::new();
     for input_pattern in &INPUT_PATTERNS {
-        if let Ok(result) = input_pattern.get_input(&sinput) {
-            return result;
+        match input_pattern.get_input(&sinput) {
+            Ok(result) => return result,
+            Err(error) => err_reason = error
         }
     }
 
-    println!("Unrecognised input: \"{}\"", input);
+    println!("Unrecognised input: \"{}\" ({})", input, err_reason);
     Input::NoOp
 }
 
